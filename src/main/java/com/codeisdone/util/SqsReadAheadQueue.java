@@ -58,13 +58,20 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * <dd>assumes behavior of {@link java.util.Deque#offer(Object)} and {@link java.util.Deque#poll()}
  * </dl>
  * 
- * <p>The latter offers better concurrency though the former might better accommodate your code.
+ * <p>The former offers the convenience of a blocking semantic, though it uses locks, meaning it is threadsafe
+ * though less concurrent, while the latter offers much better concurrency than the former, though your code
+ * would likely implement polling to interrogate the {@code SqsReadAheadQueue} instance.
  * 
  * <p>Note that when {@code SqsReadAheadQueue} received a message from SQS and pushed it onto the local queue,
  * the clock would start running for the message visibility timeout.  Specifically, for {@code SqsReadAheadQueue},
  * any SQS message would be marked as in-flight for the duration between when {@code SqsReadAheadQueue} received
- * a message from SQS and the caller actually requested that message via a pop operation.  Therefore, be sure to consider
- * the value you specify in {@Link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
+ * the message from SQS and the caller actually requested that message via a pop operation on the {@code SqsReadAheadQueue}
+ * instance.  Therefore, be sure to consider the value you specify in {@Link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
+ * 
+ * <p>Lastly, given the paragraph above and the limit SQS imposes on the maximum number of in-flight messages
+ * that may exist at any time, regardless of whether you instantiate a blocking or non-blocking instance of it,
+ * {@code SqsReadAheadQueue} will gate the maximum size of its local queue based on the SQS queue type.  Refer
+ * to {@link Builder#withLocalQueueMessageSlots(Integer)) for additional details.
  */
 public class SqsReadAheadQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsReadAheadQueue.class);
