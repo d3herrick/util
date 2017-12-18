@@ -28,7 +28,7 @@ import com.codeisdone.util.SqsReadAheadQueue;
 /**
  * Unit test suite for {@link SqsReadAheadQueue}.
  * 
- * <p><em>Note: </em>  To run this unit test suite, however you choose do it, you must specify the following
+ * <p>To run this unit test suite, however you choose do it, you must define the following
  * as system properties:
  * 
  * <p>
