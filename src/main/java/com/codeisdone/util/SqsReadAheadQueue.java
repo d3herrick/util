@@ -43,7 +43,8 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * behavior as {@code SqsReadAheadQueue}, using those APIs would impose a specific usage pattern on your code, e.g.,
  * executing the interesting bits of your code in the thread SQS dispatched for a receive message callback or
  * belaying the execution to some other context.  {@code SqsReadAheadQueue} enables you to access an SQS
- * queue as a local queue using a simple interface that masks some of the quirks of SQS.
+ * queue as a local queue using a simple interface that masks some of the quirks of the SQS API and its run-time
+ * behavior.
  * 
  * <p>Via {@link Builder#withLocalQueueBlocking(boolean)}, you may indicate whether you want a {@code SqsReadAheadQueue}
  * instance to be blocking or non-blocking in regards to {@link #pop() and {@link #push(String)) operations.
