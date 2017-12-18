@@ -1,2 +1,2 @@
 # util
-Contains code for various utilities
+Contains code for various utility functions.
