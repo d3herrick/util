@@ -162,16 +162,16 @@ public class SqsReadAheadQueue {
         }
         
         if (builder.localQueueFillThreads == null) {
-        	this.localQueueFillThreads = DEFAULT_LOCAL_QUEUE_FILE_THREADS;
+            this.localQueueFillThreads = DEFAULT_LOCAL_QUEUE_FILE_THREADS;
         }
         else {
-        	this.localQueueFillThreads = builder.localQueueFillThreads;
+            this.localQueueFillThreads = builder.localQueueFillThreads;
         }
         
         this.isLocalQueueBlocking     = builder.isLocalQueueBlocking;
         this.awsClientConfiguration   = builder.awsClientConfiguration;
         this.awsRegion                = builder.awsRegion;
-    	this.awsEndpointConfiguration = builder.awsEndpointConfiguration;
+        this.awsEndpointConfiguration = builder.awsEndpointConfiguration;
         
         initialize();
     }
@@ -186,7 +186,7 @@ public class SqsReadAheadQueue {
             AsyncHandler<SendMessageRequest, SendMessageResult> resultHandler = new AsyncHandler<SendMessageRequest, SendMessageResult>() {
                 @Override
                 public void onError(Exception e) {
-                	LOGGER.error("Exception encountered in sqs send message callback for queue {}", sqsQueueName, e);
+                    LOGGER.error("Exception encountered in sqs send message callback for queue {}", sqsQueueName, e);
                 }
                 
                 @Override
@@ -197,7 +197,7 @@ public class SqsReadAheadQueue {
             sqsClient.sendMessageAsync(sqsQueueUrl, message, resultHandler);
         }
         catch (Exception e) {
-        	LOGGER.error("Exception while sending message to sqs for queue {}", sqsQueueName, e);
+            LOGGER.error("Exception while sending message to sqs for queue {}", sqsQueueName, e);
         }
     }
     
@@ -219,7 +219,7 @@ public class SqsReadAheadQueue {
                 AsyncHandler<DeleteMessageRequest, DeleteMessageResult> resultHandler = new AsyncHandler<DeleteMessageRequest, DeleteMessageResult>() {
                     @Override
                     public void onError(Exception e) {
-                    	LOGGER.error("Exception encountered in sqs delete message callback for queue {}", sqsQueueName, e);
+                        LOGGER.error("Exception encountered in sqs delete message callback for queue {}", sqsQueueName, e);
                     }
                     
                     @Override
@@ -233,11 +233,11 @@ public class SqsReadAheadQueue {
             }
         }
         catch (Exception e) {
-        	LOGGER.error("Exception while removing messages from sqs for queue {}", sqsQueueName, e);
+            LOGGER.error("Exception while removing messages from sqs for queue {}", sqsQueueName, e);
         }
         finally {
             if (element != null) {
-            	localQueueMessageSlots.incrementAndGet();
+                localQueueMessageSlots.incrementAndGet();
             }
         }
         
@@ -250,7 +250,7 @@ public class SqsReadAheadQueue {
      * @return URL of SQS queue
      */
     public String getSQSQueueUrl() {
-    	return sqsQueueUrl;
+        return sqsQueueUrl;
     }
 
     /**
@@ -282,14 +282,14 @@ public class SqsReadAheadQueue {
             localQueue = new LinkedBlockingDeque<>();
 
             try {
-            	push = LinkedBlockingDeque.class.getMethod("put", Object.class);
+                push = LinkedBlockingDeque.class.getMethod("put", Object.class);
             }
             catch (Exception e) {
                 throw new IllegalStateException("Could not resolve blocking push method", e);
             }
             
             try {
-            	pop = LinkedBlockingDeque.class.getMethod("take", (Class<?>[]) null);
+                pop = LinkedBlockingDeque.class.getMethod("take", (Class<?>[]) null);
             }
             catch (Exception e) {
                 throw new IllegalStateException("Could not resolve blocking pop method", e);
@@ -299,14 +299,14 @@ public class SqsReadAheadQueue {
             localQueue = new ConcurrentLinkedDeque<>();
 
             try {
-            	push = ConcurrentLinkedDeque.class.getMethod("offer", Object.class);
+                push = ConcurrentLinkedDeque.class.getMethod("offer", Object.class);
             }
             catch (Exception e) {
                 throw new IllegalStateException("Could not resolve non-blocking push method", e);
             }
             
             try {
-            	pop = ConcurrentLinkedDeque.class.getMethod("poll", (Class<?>[]) null);
+                pop = ConcurrentLinkedDeque.class.getMethod("poll", (Class<?>[]) null);
             }
             catch (Exception e) {
                 throw new IllegalStateException("Could not resolve non-blocking pop method", e);
@@ -329,11 +329,11 @@ public class SqsReadAheadQueue {
      * unavailable, for example, after the deletion of an SQS queue by a unit test.
      */
     public void terminate() {
-    	isTerminated = true;
-    	
-    	if (localQueue != null) {
-    		localQueue.clear();
-    	}
+        isTerminated = true;
+        
+        if (localQueue != null) {
+            localQueue.clear();
+        }
     }
     
     /**
@@ -369,21 +369,21 @@ public class SqsReadAheadQueue {
                             withVisibilityTimeout(sqsQueueMessageVisibilityTimeout);
                     
                         if (!isTerminated) {
-	                        ReceiveMessageResult messageResult = sqsClient.receiveMessage(messageRequest);
-	                        List<Message>        messages      = messageResult.getMessages();
-	        
-	                        if (!messages.isEmpty()) {
-	                        	for (Message message : messages) {
-	                                push.invoke(localQueue, (Object) new String[]{message.getReceiptHandle(), message.getBody()});
-	                        	}
-	                        }
+                            ReceiveMessageResult messageResult = sqsClient.receiveMessage(messageRequest);
+                            List<Message>        messages      = messageResult.getMessages();
+            
+                            if (!messages.isEmpty()) {
+                                for (Message message : messages) {
+                                    push.invoke(localQueue, (Object) new String[]{message.getReceiptHandle(), message.getBody()});
+                                }
+                            }
                         }
                         else {
-                        	break;
+                            break;
                         }
                     }
                     catch (Exception e) {
-                    	LOGGER.error("Exception encountered in sqs receive message invocation for queue {}", sqsQueueName, e);
+                        LOGGER.error("Exception encountered in sqs receive message invocation for queue {}", sqsQueueName, e);
                     }
                 }
             }
@@ -484,9 +484,9 @@ public class SqsReadAheadQueue {
          * @param isLocalQueueBlocking true to indicate blocking queue, false to create non-blocking queue
          */
         public Builder withLocalQueueBlocking(boolean isLocalQueueBlocking) {
-        	this.isLocalQueueBlocking = isLocalQueueBlocking;
-        	
-        	return this;
+            this.isLocalQueueBlocking = isLocalQueueBlocking;
+            
+            return this;
         }
 
         /**
@@ -496,9 +496,9 @@ public class SqsReadAheadQueue {
          * @param localQueueFillThreads maximum number of threads that will be dispatched to fill the local queue with messages in the SQS queue
          */
         public Builder withLocalQueueFillThreads(Integer localQueueFillThreads) {
-        	this.localQueueFillThreads = localQueueFillThreads;
-        	
-        	return this;
+            this.localQueueFillThreads = localQueueFillThreads;
+            
+            return this;
         }
 
         /**
@@ -537,18 +537,18 @@ public class SqsReadAheadQueue {
 
         /** 
          * Sets the AWS endpoint configuration to use with the SQS connection.
-		 *
+         *
          * <p><em>Note:</em> Per AWS API, specify either region or endpoint configuration, not both.
- 	     *
+          *
          * @param awsEndpointConfiguration AWS endpoint configuration
          * 
          * @see Builder#withRegion(String)
          * @see com.amazonaws.client.builder.AwsClientBuilder#withEndpointConfiguration(EndpointConfiguration)}
          */
         public Builder withEndpointConfiguration(EndpointConfiguration awsEndpointConfiguration) {
-        	this.awsEndpointConfiguration = awsEndpointConfiguration;
-        	
-        	return this;
+            this.awsEndpointConfiguration = awsEndpointConfiguration;
+            
+            return this;
         }
 
         /**
