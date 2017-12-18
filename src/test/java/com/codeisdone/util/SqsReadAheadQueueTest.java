@@ -42,6 +42,9 @@ import com.codeisdone.util.SqsReadAheadQueue;
  * this unit test suite via maven, specify
  * 
  * <p>{@code mvn test -Dtest=SqsReadAheadQueueTest -Daws.accesskey=your-aws-accesskey-here -Daws.secretkey=your-aws-secretkey-here}
+ * 
+ * <p>Lastly, this unit test suite uses features specific to {@linkplain http://junit.org/junit5/}.  You will
+ * not be able to run this suite with a back-level flavor of JUnit.
  */
 public class SqsReadAheadQueueTest {
     private static Logger LOGGER = LoggerFactory.getLogger(SqsReadAheadQueueTest.class);
