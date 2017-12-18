@@ -346,6 +346,13 @@ public class SqsReadAheadQueue {
     }
     
     /**
+     * {@inheritDoc}
+     */
+    public String toString() {
+        return sqsQueueName;
+    }
+    
+    /**
      * {@code SqsQueueReader} implements a reader for elements in the SQS queue this instance references.
      * The reader receives messages from the SQS queue, placing them into the local queue.  However,
      * the reader does <em>not</em> delete the messages from the SQS queue, meaning the clock
@@ -354,7 +361,7 @@ public class SqsReadAheadQueue {
      * the message body.  When {@code SqsReadAheadQueue} returns elements from the local queue to callers, it
      * uses the receipt handle to permanently delete the message from the SQS queue.
      */
-    public class SqsQueueReader implements Runnable {
+    private class SqsQueueReader implements Runnable {
         @Override
         public void run() {
             while (true) {
