@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2017 Douglas Herrick
+ * 
+ * This file is subject to the license terms of https://github.com/d3herrick/util/blob/master/LICENSE
+ */
 package com.codeisdone.util;
 
 import java.lang.reflect.Method;
