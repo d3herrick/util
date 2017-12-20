@@ -138,7 +138,7 @@ public class SqsReadAheadQueue {
     /**
      * Local queue implementation that buffers SQS queue elements, where the objects include
      * 
-     * <p><dl>
+     * <dl>
      * <dt>0
      * <dd>SQS message receipt handle
      * <dt>1
@@ -556,7 +556,7 @@ public class SqsReadAheadQueue {
          * 
          * @return this builder instance
          *
-         * @see Builder#withEndpointConfiguration(EndpointConfiguration)
+         * @see Builder#withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration)
          * @see com.amazonaws.regions.Regions
          * @see com.amazonaws.client.builder.AwsClientBuilder#withRegion(String)
          */
