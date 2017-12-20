@@ -52,10 +52,10 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * behavior.
  * 
  * <p>Via {@link Builder#withLocalQueueBlocking(boolean)}, you may indicate whether you want a {@code SqsReadAheadQueue}
- * instance to be blocking or non-blocking in regards to {@link #pop() and {@link #push(String)) operations.
+ * instance to be blocking or non-blocking in regards to {@link #pop()} and {@link #push(String)} operations.
  * Specifically, if configured as
  * 
- * <p><dl>
+ * <dl>
  * <dt>blocking
  * <dd>assumes the behavior of {@link java.util.concurrent.BlockingDeque#put(Object)} and {@link java.util.concurrent.BlockingDeque#take()}
  * 
@@ -71,12 +71,12 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * the clock would start running for the message visibility timeout.  Specifically, for {@code SqsReadAheadQueue},
  * any SQS message would be marked as in-flight for the duration between when {@code SqsReadAheadQueue} received
  * the message from SQS and the caller actually requested that message via a pop operation on the {@code SqsReadAheadQueue}
- * instance.  Therefore, be sure to consider the value you specify in {@Link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
+ * instance.  Therefore, be sure to consider the value you specify in {@link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
  * 
  * <p>Lastly, given the paragraph above and the limit SQS imposes on the maximum number of in-flight messages
  * that may exist at any time, regardless of whether you instantiate a blocking or non-blocking instance of it,
  * {@code SqsReadAheadQueue} will gate the maximum size of its local queue based on the SQS queue type.  Refer
- * to {@link Builder#withLocalQueueMessageSlots(Integer)) for additional details.
+ * to {@link Builder#withLocalQueueMessageSlots(Integer)} for additional details.
  */
 public class SqsReadAheadQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsReadAheadQueue.class);
@@ -218,7 +218,7 @@ public class SqsReadAheadQueue {
     /**
      * Pops a message from the queue.
      * 
-     * @returns message previously pushed onto queue or null, if no message were available when the call was made
+     * @return message previously pushed onto queue or null, if no message were available when the call was made
      */
     public String pop() {
         String   message = null;
@@ -482,7 +482,7 @@ public class SqsReadAheadQueue {
          * messages. If no value is specified for {@code localQueueMessageSlots}, the local queue will be limited to
          * the maximum number of in-flight messages that SQS imposes based on the type of queue:
          * 
-         * <p><dl>
+         * <dl>
          * <dt>Standard
          * <dd>120,000
          * 
@@ -491,6 +491,8 @@ public class SqsReadAheadQueue {
          * </dl>
          * 
          * @param localQueueMessageSlots maximum number of messages that will be buffered in the local queue
+         * 
+         * @return this builder instance
          */
         public Builder withLocalQueueMessageSlots(Integer localQueueMessageSlots) {
             this.localQueueMessageSlots = localQueueMessageSlots;
@@ -503,6 +505,8 @@ public class SqsReadAheadQueue {
          * the queue will default to <em>non-blocking</em>.
          * 
          * @param isLocalQueueBlocking true to indicate blocking queue, false to create non-blocking queue
+         * 
+         * @return this builder instance
          */
         public Builder withLocalQueueBlocking(boolean isLocalQueueBlocking) {
             this.isLocalQueueBlocking = isLocalQueueBlocking;
@@ -515,6 +519,8 @@ public class SqsReadAheadQueue {
          * in the SQS queue.  If no value is specified for {@code reads}, it will default to <em>20</em>. 
          * 
          * @param localQueueFillThreads maximum number of threads that will be dispatched to fill the local queue with messages in the SQS queue
+         * 
+         * @return this builder instance
          */
         public Builder withLocalQueueFillThreads(Integer localQueueFillThreads) {
             this.localQueueFillThreads = localQueueFillThreads;
@@ -526,6 +532,8 @@ public class SqsReadAheadQueue {
          * Sets the AWS client configuration to use with the SQS connection.
          * 
          * @param awsClientConfiguration AWS client configuration
+         * 
+         * @return this builder instance
          */
         public Builder withClientConfiguration(ClientConfiguration awsClientConfiguration) {
             this.awsClientConfiguration = awsClientConfiguration;
@@ -545,10 +553,12 @@ public class SqsReadAheadQueue {
          * <p><em>Note:</em> Per AWS API, specify either region or endpoint configuration, not both.
          * 
          * @param awsRegion AWS region
+         * 
+         * @return this builder instance
          *
          * @see Builder#withEndpointConfiguration(EndpointConfiguration)
          * @see com.amazonaws.regions.Regions
-         * @see com.amazonaws.client.builder.AwsClientBuilder#withRegion(String)}
+         * @see com.amazonaws.client.builder.AwsClientBuilder#withRegion(String)
          */
         public Builder withRegion(String awsRegion) {
             this.awsRegion = awsRegion;
@@ -563,8 +573,10 @@ public class SqsReadAheadQueue {
           *
          * @param awsEndpointConfiguration AWS endpoint configuration
          * 
+         * @return this builder instance
+         * 
          * @see Builder#withRegion(String)
-         * @see com.amazonaws.client.builder.AwsClientBuilder#withEndpointConfiguration(EndpointConfiguration)}
+         * @see com.amazonaws.client.builder.AwsClientBuilder#withEndpointConfiguration(EndpointConfiguration)
          */
         public Builder withEndpointConfiguration(EndpointConfiguration awsEndpointConfiguration) {
             this.awsEndpointConfiguration = awsEndpointConfiguration;

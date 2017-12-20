@@ -36,7 +36,6 @@ import com.codeisdone.util.SqsReadAheadQueue;
  * <p>To run this unit test suite, however you choose do it, you must define the following
  * as system properties:
  * 
- * <p>
  * <ul>
  * <li>aws.accesskey
  * <li>aws.secretkey
