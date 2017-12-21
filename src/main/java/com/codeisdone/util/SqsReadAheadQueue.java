@@ -13,6 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class SqsReadAheadQueue {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsReadAheadQueue.class);
 
     /** SQS queue reader thread name stem. */
-    private static final String SQS_READER_THREAD_STEM = "fq-sqs-reader-";
+    private static final String SQS_READER_THREAD_STEM = "sraq-sqs-reader-%d";
 
     /** Maximum number of messages SQS allows you to receive in a single fetch. */
     private static final int SQS_MAX_RECEIVE_MESSAGE_COUNT = 10;
@@ -107,6 +108,9 @@ public class SqsReadAheadQueue {
 
     /** SQS queue URL. */
     private String sqsQueueUrl;
+
+    /** SQS message wait time in seconds. */
+    private Integer sqsQueueWaitTimeSeconds;
 
     /** SQS message visibility timeout. */
     private Integer sqsQueueMessageVisibilityTimeout;
@@ -159,8 +163,9 @@ public class SqsReadAheadQueue {
      * @param builder builder with which to instantiate this
      */
     public SqsReadAheadQueue(Builder builder) {
-        this.awsCredentials = builder.awsCredentials;
-        this.sqsQueueName   = builder.sqsQueueName;
+        this.awsCredentials                   = builder.awsCredentials;
+        this.sqsQueueName                     = builder.sqsQueueName;
+        this.sqsQueueWaitTimeSeconds          = builder.sqsQueueWaitTimeSeconds;
         this.sqsQueueMessageVisibilityTimeout = builder.sqsQueueMessageVisibilityTimeout;
 
         if (builder.localQueueMessageSlots == null) {
@@ -327,12 +332,13 @@ public class SqsReadAheadQueue {
             }
         }
 
+        BasicThreadFactory threadFactory = new BasicThreadFactory.Builder()
+            .namingPattern(SQS_READER_THREAD_STEM)
+            .daemon(true)
+            .build();
+        
         for (int i = 0; i < localQueueFillThreads; i++) {
-            SqsQueueReader reader       = new SqsQueueReader();
-            Thread         readerThread = new Thread(reader, SQS_READER_THREAD_STEM + i);
-            
-            readerThread.setDaemon(true);
-            readerThread.start();
+            threadFactory.newThread(new SqsQueueReader()).start();
         }
     }
     
@@ -386,7 +392,7 @@ public class SqsReadAheadQueue {
                     try {
                         ReceiveMessageRequest messageRequest = new ReceiveMessageRequest(sqsQueueUrl).
                             withMaxNumberOfMessages(numberOfMessages).
-                            withWaitTimeSeconds(10).
+                            withWaitTimeSeconds(sqsQueueWaitTimeSeconds).
                             withVisibilityTimeout(sqsQueueMessageVisibilityTimeout);
                     
                         if (!isTerminated) {
@@ -420,6 +426,9 @@ public class SqsReadAheadQueue {
 
         /** SQS queue name. */
         private String sqsQueueName;
+
+        /** SQS message wait time in seconds. */
+        private Integer sqsQueueWaitTimeSeconds;
 
         /** SQS message visibility timeout. */
         private Integer sqsQueueMessageVisibilityTimeout;
@@ -462,6 +471,19 @@ public class SqsReadAheadQueue {
             else {
                 throw new IllegalArgumentException("SQS queue name is null or zero-length");
             }
+        }
+        
+        /**
+         * Sets the SQS queue message receive wait time.  If not set, the value configured for the SQS queue will be used.
+         * 
+         * @param sqsQueueWaitTimeSeconds wait time in seconds
+         * 
+         * @return this builder instance
+         */
+        public Builder withSqsQueueWaitTimeSeconds(Integer sqsQueueWaitTimeSeconds) {
+            this.sqsQueueWaitTimeSeconds = sqsQueueWaitTimeSeconds;
+            
+            return this;
         }
         
         /**
@@ -535,7 +557,7 @@ public class SqsReadAheadQueue {
          * 
          * @return this builder instance
          */
-        public Builder withClientConfiguration(ClientConfiguration awsClientConfiguration) {
+        public Builder withAwsClientConfiguration(ClientConfiguration awsClientConfiguration) {
             this.awsClientConfiguration = awsClientConfiguration;
             
             return this;
@@ -556,11 +578,11 @@ public class SqsReadAheadQueue {
          * 
          * @return this builder instance
          *
-         * @see Builder#withEndpointConfiguration(AwsClientBuilder.EndpointConfiguration)
+         * @see Builder#withAwsEndpointConfiguration(AwsClientBuilder.EndpointConfiguration)
          * @see com.amazonaws.regions.Regions
          * @see com.amazonaws.client.builder.AwsClientBuilder#withRegion(String)
          */
-        public Builder withRegion(String awsRegion) {
+        public Builder withAwsRegion(String awsRegion) {
             this.awsRegion = awsRegion;
             
             return this;
@@ -570,15 +592,15 @@ public class SqsReadAheadQueue {
          * Sets the AWS endpoint configuration to use with the SQS connection.
          *
          * <p><em>Note:</em> Per AWS API, specify either region or endpoint configuration, not both.
-          *
+         *
          * @param awsEndpointConfiguration AWS endpoint configuration
          * 
          * @return this builder instance
          * 
-         * @see Builder#withRegion(String)
+         * @see Builder#withAwsRegion(String)
          * @see com.amazonaws.client.builder.AwsClientBuilder#withEndpointConfiguration(EndpointConfiguration)
          */
-        public Builder withEndpointConfiguration(EndpointConfiguration awsEndpointConfiguration) {
+        public Builder withAwsEndpointConfiguration(EndpointConfiguration awsEndpointConfiguration) {
             this.awsEndpointConfiguration = awsEndpointConfiguration;
             
             return this;

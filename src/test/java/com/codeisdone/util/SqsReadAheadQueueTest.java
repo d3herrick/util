@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -67,6 +68,33 @@ public class SqsReadAheadQueueTest {
     @TestInstance(Lifecycle.PER_CLASS)
     class TestsWithSqsQueue {
         /**
+         * Tests basic operations of queue instantiated with default properties.
+         */
+        @Test
+        public void testDefaultQueue(TestInfo testInfo) {
+            String[]          sqsQueueRefs   = null;
+            SqsReadAheadQueue readAheadQueue = null;
+            
+            try {
+                sqsQueueRefs = createSqsQueue();
+                
+                // create queue specifying only the region (specifying region eliminates dev environment setup dependencies)
+                SqsReadAheadQueue.Builder builder = new SqsReadAheadQueue.Builder(awsCredentials, sqsQueueRefs[0])
+                    .withAwsRegion(Regions.US_EAST_1.getName());
+                
+                readAheadQueue = builder.build();
+                
+                runQueueTest(testInfo.getDisplayName(), readAheadQueue, 1, 5);
+            }
+            catch (Exception e) {
+                LOGGER.error("Spurious exception", e);
+            }
+            finally {
+                deleteSqsQueue(sqsQueueRefs, readAheadQueue);
+            }
+        }
+        
+        /**
          * Tests basic operations as blocking queue.
          */
         @Test
@@ -77,10 +105,11 @@ public class SqsReadAheadQueueTest {
             try {
                 sqsQueueRefs = createSqsQueue();
                 
-                // create queue specifying sqs region
+                // create queue specifying sqs region with short polling (minimal wait time)
                 SqsReadAheadQueue.Builder builder = new SqsReadAheadQueue.Builder(awsCredentials, sqsQueueRefs[0])
+                    .withSqsQueueWaitTimeSeconds(1)
                     .withSqsQueueMessageVisibilityTimeout(30)
-                    .withRegion(Regions.US_EAST_1.getName())
+                    .withAwsRegion(Regions.US_EAST_1.getName())
                     .withLocalQueueFillThreads(1)
                     .withLocalQueueBlocking(true);
                 
@@ -107,10 +136,10 @@ public class SqsReadAheadQueueTest {
             try {
                 sqsQueueRefs = createSqsQueue();
                 
-                // create queue specifying sqs endpoint
+                // create queue specifying sqs endpoint with long polling (maximum wait time)
                 SqsReadAheadQueue.Builder builder = new SqsReadAheadQueue.Builder(awsCredentials, sqsQueueRefs[0])
                     .withSqsQueueMessageVisibilityTimeout(30)
-                    .withEndpointConfiguration(new EndpointConfiguration("sqs.us-east-1.amazonaws.com", Regions.US_EAST_1.getName()))
+                    .withAwsEndpointConfiguration(new EndpointConfiguration("sqs.us-east-1.amazonaws.com", Regions.US_EAST_1.getName()))
                     .withLocalQueueFillThreads(2)
                     .withLocalQueueBlocking(false)
                     .withLocalQueueMessageSlots(100);
@@ -178,8 +207,13 @@ public class SqsReadAheadQueueTest {
         private void runQueueTest(final String testName, final SqsReadAheadQueue queue, final int workerThreadCount, final int workerMessageCount) {
             final CountDownLatch queueLatch = new CountDownLatch(workerThreadCount << 1);
             
+            BasicThreadFactory writerFactory = new BasicThreadFactory.Builder()
+                .namingPattern("queue-writer-%d")
+                .daemon(true)
+                .build();
+                
             for (int i = 0; i < workerThreadCount; i++) {
-                Thread queueWriter = new Thread(new Runnable() {
+                writerFactory.newThread(new Runnable() {
                     @Override
                     public void run() {
                         for (int i = 0; i < workerMessageCount; i++) {
@@ -188,15 +222,17 @@ public class SqsReadAheadQueueTest {
                         
                         queueLatch.countDown();
                     }
-                }, "queue-writer-" + i);
-                
-                queueWriter.setDaemon(true);
-                queueWriter.start();
+                }).start();
             }
     
+            BasicThreadFactory readerFactory = new BasicThreadFactory.Builder()
+                .namingPattern("queue-reader-%d")
+                .daemon(true)
+                .build();
+ 
             for (int i = 0; i < workerThreadCount; i++) {
-                Thread queueReader = new Thread(new Runnable() {
-                @Override
+                readerFactory.newThread(new Runnable() {
+                    @Override
                     public void run() {
                         int popOpsAttempted = 0;
                         int popOpsSucceeded = 0;
@@ -223,10 +259,7 @@ public class SqsReadAheadQueueTest {
                         
                         queueLatch.countDown();
                     }    
-                }, "queue-reader-" + i);
-                
-                queueReader.setDaemon(true);
-                queueReader.start();
+                }).start();
             }
             
             try {
@@ -274,7 +307,7 @@ public class SqsReadAheadQueueTest {
             
             try {
                 (new SqsReadAheadQueue.Builder(awsCredentials, String.format("test_sraq_invalid_%s", UUID.randomUUID().toString()))
-                    .withRegion(Regions.US_EAST_1.getName()))
+                    .withAwsRegion(Regions.US_EAST_1.getName()))
                     .build();
             }
             catch (IllegalStateException e) {
