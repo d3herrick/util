@@ -73,6 +73,10 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * any SQS message would be marked as in-flight for the duration between when {@code SqsReadAheadQueue} received
  * the message from SQS and the caller actually requested that message via a pop operation on the {@code SqsReadAheadQueue}
  * instance.  Therefore, be sure to consider the value you specify in {@link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
+ * Likewise, given the pool of receive message threads {@code SqsReadAheadQueue} dispatches, to reduce the number
+ * of empty receive message responses from SQS, you might consider specifying on either in the definition of the
+ * SQS queue that {@code SqsReadAheadQueue} references or via {@link Builder#withSqsQueueWaitTimeSeconds(Integer)} a
+ * value (i.e., 1-20) that will enable long polling.
  * 
  * <p>Lastly, given the paragraph above and the limit SQS imposes on the maximum number of in-flight messages
  * that may exist at any time, regardless of whether you instantiate a blocking or non-blocking instance of it,
