@@ -1,8 +1,26 @@
 /*
- * Copyright (c) 2017 Douglas Herrick
- * 
- * This file is subject to the license terms of https://github.com/d3herrick/util/blob/master/LICENSE
- */
+MIT License
+
+Copyright 2017-2018 Douglas Herrick
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 package com.codeisdone.util;
 
 import java.lang.reflect.Method;
@@ -69,12 +87,12 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
  * would likely implement polling to interrogate the {@code SqsReadAheadQueue} instance.
  * 
  * <p>Note that when {@code SqsReadAheadQueue} received a message from SQS and pushed it onto the local queue,
- * the clock would start running for the message visibility timeout.  Specifically, for {@code SqsReadAheadQueue},
+ * the clock would start running for the message's visibility timeout.  Specifically, for {@code SqsReadAheadQueue},
  * any SQS message would be marked as in-flight for the duration between when {@code SqsReadAheadQueue} received
  * the message from SQS and the caller actually requested that message via a pop operation on the {@code SqsReadAheadQueue}
  * instance.  Therefore, be sure to consider the value you specify in {@link Builder#withSqsQueueMessageVisibilityTimeout(Integer)}.
- * Likewise, given the pool of receive message threads {@code SqsReadAheadQueue} dispatches, to reduce the number
- * of empty receive message responses from SQS, you might consider specifying on either in the definition of the
+ * Likewise, given the pool of receive message threads that {@code SqsReadAheadQueue} dispatches, to reduce the number
+ * of empty receive message responses from SQS, you might consider specifying on either the definition of the
  * SQS queue that {@code SqsReadAheadQueue} references or via {@link Builder#withSqsQueueWaitTimeSeconds(Integer)} a
  * value (i.e., 1-20) that will enable long polling.
  * 
