@@ -245,7 +245,7 @@ public class SqsReadAheadQueue {
     /**
      * Pops a message from the queue.
      * 
-     * @return message previously pushed onto queue or null, if no message were available when the call was made
+     * @return message previously pushed onto queue or null, if no message was available when the call was made
      */
     public String pop() {
         String   message = null;
