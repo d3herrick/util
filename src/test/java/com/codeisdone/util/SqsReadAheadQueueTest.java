@@ -47,7 +47,6 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.DeleteQueueRequest;
-import com.codeisdone.util.SqsReadAheadQueue;
 
 /**
  * Unit test suite for {@link SqsReadAheadQueue}.
